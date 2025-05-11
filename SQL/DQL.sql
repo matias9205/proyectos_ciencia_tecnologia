@@ -1,24 +1,31 @@
--- Active: 1729102093806@@127.0.0.1@3306@mysql_database
-SELECT anio, SUM(monto_total_adjudicado) AS "monto_total_aÃ±o" FROM proyectos_ciencia_tecnologia.detalle_proyectos
-GROUP BY anio
-ORDER BY anio;
+USE data_practise
 
-SELECT COUNT(*) 
-FROM (SELECT DISTINCT proyecto_id, proyecto_fuente, titulo, fecha_inicio, fecha_finalizacion, resumen, 
-             moneda_nombre, moneda_simbolo, monto_total_solicitado, monto_total_adjudicado, 
-             monto_financiado_solicitado, monto_financiado_adjudicado, tipo_proyecto_sigla, 
-             tipo_proyecto_descripcion, estado_proyecto_descripcion, codigo_identificacion, 
-             palabras_clave, fondo_anpcyt, cantidad_miembros_F, cantidad_miembros_M, 
-             sexo_director, anio
-      FROM proyectos_ciencia_tecnologia.detalle_proyectos) AS unique_projects;
+-- Tomamos una muestra de 10
+SELECT TOP (10) * 
+FROM [proyectos_ciencia_tecnologia].[proyectos_por_anio]
+ORDER BY NEWID()
 
-SELECT DISTINCT(estado_proyecto_descripcion) FROM proyectos_ciencia_tecnologia.detalle_proyectos
-
-select * from proyectos_ciencia_tecnologia.proyectos where estado_id = 2
-
-UPDATE proyectos_ciencia_tecnologia.proyectos
-SET duracion = CASE
-    WHEN estado_id = 1 THEN DATEDIFF(fecha_finalizacion, fecha_inicio)  -- si 'Finalizado' es 1
-    WHEN estado_id = 2 THEN 0                                           -- si 'En ejecucion' es 2
-    ELSE NULL
-END;
+-- Cuántos proyectos se iniciaron por año y cuántos finalizaron por año?
+SELECT * FROM (
+	SELECT
+		YEAR([fecha_inicio]) AS anio,
+		COUNT(*) AS proyectos_iniciados, 
+		'INICIADOS' AS status
+	FROM
+		[proyectos_ciencia_tecnologia].[proyectos_por_anio]
+	WHERE
+		[fecha_inicio] IS NOT NULL
+	GROUP BY
+		YEAR([fecha_inicio])
+	UNION ALL
+	SELECT
+		YEAR([fecha_fin]) AS anio,
+		COUNT(*) AS proyectos_finalizados, 
+		'FINALIZADOS' AS status
+	FROM
+		[proyectos_ciencia_tecnologia].[proyectos_por_anio]
+	WHERE
+		[fecha_fin] IS NOT NULL
+	GROUP BY
+		YEAR([fecha_fin])
+) ORDER BY anio
