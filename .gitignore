@@ -2,4 +2,4 @@ myen
 mysql_data
 .env
 CSV
-*.pyc
+__pycache__
